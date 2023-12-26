@@ -39,10 +39,10 @@ public class ShoppingCart{
         if (quantity <= 0)
             throw new IllegalArgumentException("Illegal quantity");
         Item item = new Item();
-        item.title  = title;
-        item.price  = price;
-        item.quantity = quantity;
-        item.type = type;
+        item.setTitle(title);
+        item.setPrice(price);
+        item.setQuantity(quantity);
+        item.setType(type);
         items.add(item);
     }
 
@@ -70,18 +70,19 @@ public class ShoppingCart{
         double total = 0.00;
         int  index = 0;
         for (Item item : items) {
-            int discount = calculateDiscount(item.type, item.quantity);
-            double itemTotal = item.price * item.quantity * (100.00 - discount) / 100.00;
+            item.setDiscount(calculateDiscount(item.getType(), item.getQuantity()));
+            item.setTotalPrice(item.getPrice() * item.getQuantity() * (100.00 - item.getDiscount()) / 100.00);
             lines.add(new String[]{
                     String.valueOf(++index),
-                    item.title,
-                    MONEY.format(item.price),
-                    String.valueOf(item.quantity),
-                    (discount == 0) ? "-" : (String.valueOf(discount) + "%"),
-                    MONEY.format(itemTotal)
+                    item.getTitle(),
+                    MONEY.format(item.getPrice()),
+                    String.valueOf(item.getQuantity()),
+                    (item.getDiscount() == 0) ? "-" : (String.valueOf(item.getDiscount()) + "%"),
+                    MONEY.format(item.getTotalPrice())
             });
-            total += itemTotal;
+            total += item.getTotalPrice();
         }
+
         String[] footer = { String.valueOf(index),"","","","",
                 MONEY.format(total) };
         // formatting table
@@ -90,9 +91,9 @@ public class ShoppingCart{
         for (String[] line : lines)
             adjustColumnWidth(line, width);
         for (int i = 0; i < header.length; i++)
-        adjustColumnWidth(header, width);
+            adjustColumnWidth(header, width);
         for (int i = 0; i < footer.length; i++)
-        adjustColumnWidth(footer, width);
+            adjustColumnWidth(footer, width);
 
         // line length
         int lineLength = width.length - 1;
@@ -138,6 +139,7 @@ public class ShoppingCart{
             sb.append("-");
         sb.append("\n");
     }
+
 
     // --- private section -----------------------------------------------------
     private static final NumberFormat MONEY;
@@ -201,9 +203,60 @@ public class ShoppingCart{
 
     /** item info */
     private static class Item {
-        String title;
-        double price;
-        int quantity;
-        ItemType type;
+        private String title;
+        private double price;
+        private int quantity;
+        private ItemType type;
+        private int discount;
+        private double total;
+
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public double getPrice() {
+            return price;
+        }
+
+        public void setPrice(double price) {
+            this.price = price;
+        }
+
+        public int getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(int quantity) {
+            this.quantity = quantity;
+        }
+
+        public ItemType getType() {
+            return type;
+        }
+
+        public void setType(ItemType type) {
+            this.type = type;
+        }
+
+        public int getDiscount() {
+            return discount;
+        }
+
+        public void setDiscount(int discount) {
+            this.discount = discount;
+        }
+
+        public double getTotalPrice() {
+            return total;
+        }
+
+        public void setTotalPrice(double total) {
+            this.total = total;
+        }
     }
 }
