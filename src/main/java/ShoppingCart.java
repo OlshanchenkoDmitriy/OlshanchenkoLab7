@@ -4,6 +4,24 @@ import java.text.*;
 /** Containing items and calculating price. */
 public class ShoppingCart{
 
+    public static final int MAX_TITLE_LENGTH = 32;
+    public static final double MIN_PRICE = 0.01;
+    public static final double PERCENT = 100.00;
+    public static final int ALIGN_CENTER = 0;
+    public static final int HALF = 2;
+    public static final int ALIGN_LEFT = -1;
+    public static final  int ALIGN_RIGHT=1;
+    public static final int START_INDEX = 0;
+    public static final int NO_DISCOUNT = 0;
+    public static final int MIN_QUANTITY_FOR_DISCOUNT = 1;
+    public static final int HALF_PRICE = 50;
+    public static final int SALE_DISCOUNT = 70;
+    public static final int MAX_DISCOUNT = 80;
+    public static final int QUANTITY_DISCOUNT_FACTOR = 10;
+    private static final int INITIAL_COLUMN_WIDTH = 0;
+    private static final int LINE_LENGTH_ADJUSTMENT = -1;
+    private static final int EMPTY = 0;
+
     public static enum ItemType { NEW, REGULAR, SECOND_FREE, SALE };
     /**
      * Container for added items
@@ -32,9 +50,9 @@ public class ShoppingCart{
      * @throws IllegalArgumentException if some value is wrong
      */
     public void addItem(String title, double price, int quantity, ItemType type){
-        if (title == null || title.length() == 0 || title.length() > 32)
+        if (title == null || title.length() == 0 || title.length() > MAX_TITLE_LENGTH)
             throw new IllegalArgumentException("Illegal title");
-        if (price < 0.01)
+        if (price < MIN_PRICE)
             throw new IllegalArgumentException("Illegal price");
         if (quantity <= 0)
             throw new IllegalArgumentException("Illegal quantity");
@@ -65,7 +83,7 @@ public class ShoppingCart{
             return "No items.";
         List<String[]> lines = new ArrayList<String[]>();
         String[] header = {"#","Item","Price","Quan.","Discount","Total"};
-        int[] align = new int[] { 1, -1, 1, 1, 1, 1 };
+        int[] align = new int[] { ALIGN_RIGHT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_RIGHT, ALIGN_RIGHT, ALIGN_RIGHT };
 
         double total = calculateItemsParameters(lines);
         return getFormattedTicketTable(total, lines, header, align);
@@ -84,7 +102,7 @@ public class ShoppingCart{
 
     private void convertItemsToTableLines(Item item, List<String[]> lines, int index) {
         item.setDiscount(calculateDiscount(item.getType(), item.getQuantity()));
-        item.setTotalPrice(item.getPrice() * item.getQuantity() * (100.00 - item.getDiscount()) / 100.00);
+        item.setTotalPrice(item.getPrice() * item.getQuantity() * (PERCENT - item.getDiscount()) / PERCENT);
         lines.add(new String[]{
                 String.valueOf(index),
                 item.getTitle(),
@@ -100,7 +118,7 @@ public class ShoppingCart{
                 MONEY.format(total) };
         // formatting table
         // column max length
-        int[] width = new int[]{0,0,0,0,0,0};
+        int[] width =new int[]{INITIAL_COLUMN_WIDTH, INITIAL_COLUMN_WIDTH, INITIAL_COLUMN_WIDTH, INITIAL_COLUMN_WIDTH, INITIAL_COLUMN_WIDTH, INITIAL_COLUMN_WIDTH};
         for (String[] line : lines)
             adjustColumnWidth(line, width);
         for (int i = 0; i < header.length; i++)
@@ -109,7 +127,7 @@ public class ShoppingCart{
             adjustColumnWidth(footer, width);
 
         // line length
-        int lineLength = width.length - 1;
+        int lineLength = width.length - LINE_LENGTH_ADJUSTMENT;
         for (int w : width)
             lineLength += w;
         StringBuilder sb = new StringBuilder();
@@ -125,7 +143,7 @@ public class ShoppingCart{
             appendFormattedLine(sb, line, align, width);
         }
 
-        if (lines.size() > 0) {
+        if (lines.size() > EMPTY) {
             // separator
             appendSeparator(sb, lineLength);
         }
@@ -171,15 +189,15 @@ public class ShoppingCart{
      */
     public static void appendFormatted(StringBuilder sb, String value, int align, int width){
         if (value.length() > width)
-            value = value.substring(0,width);
-        int before = (align == 0)
-                ? (width - value.length()) / 2
-                : (align == -1) ? 0 : width - value.length();
+            value = value.substring(START_INDEX,width);
+        int before = (align == ALIGN_CENTER)
+                ? (width - value.length()) / HALF
+                : (align == ALIGN_LEFT) ? 0 : width - value.length();
         int after = width - value.length() - before;
-        while (before-- > 0)
+        while (before-- > START_INDEX)
             sb.append(" ");
         sb.append(value);
-        while (after-- > 0)
+        while (after-- > START_INDEX)
             sb.append(" ");
         sb.append(" ");
     }
@@ -193,25 +211,25 @@ public class ShoppingCart{
      * but not more than 80% total
      */
     public static int calculateDiscount(ItemType type, int quantity){
-        int discount = 0;
+        int discount = NO_DISCOUNT;
         switch (type) {
             case NEW:
-                return 0;
+                return NO_DISCOUNT;
             case REGULAR:
-                discount = 0;
+                discount = NO_DISCOUNT;
                 break;
             case SECOND_FREE:
-                if (quantity > 1)
-                    discount = 50;
+                if (quantity > MIN_QUANTITY_FOR_DISCOUNT)
+                    discount = HALF_PRICE;
                 break;
             case SALE:
-                discount = 70;
+                discount = SALE_DISCOUNT;
                 break;
         }
-        if (discount < 80) {
-            discount += quantity / 10;
-            if (discount > 80)
-                discount = 80;
+        if (discount < MAX_DISCOUNT) {
+            discount += quantity / QUANTITY_DISCOUNT_FACTOR;
+            if (discount > MAX_DISCOUNT)
+                discount = MAX_DISCOUNT;
         }
         return discount;
     }
