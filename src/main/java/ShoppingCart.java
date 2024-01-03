@@ -22,7 +22,7 @@ public class ShoppingCart{
     private static final int LINE_LENGTH_ADJUSTMENT = -1;
     private static final int EMPTY = 0;
 
-    public static enum ItemType { NEW, REGULAR, SECOND_FREE, SALE };
+    public static enum ItemType { NEW, REGULAR, SECOND_FREE, SALE }
     /**
      * Container for added items
      */
@@ -32,7 +32,7 @@ public class ShoppingCart{
      * Tests all class methods.
      */
     public static void main(String[] args) {
-        // TODO: add tests here
+        // TODO: add tests for  addItem,formatTicket.
         ShoppingCart cart = new ShoppingCart();
         cart.addItem("Apple", 0.99, 5, ItemType.NEW);
         cart.addItem("Banana", 20.00, 4, ItemType.SECOND_FREE);
@@ -89,6 +89,12 @@ public class ShoppingCart{
         return getFormattedTicketTable(total, lines, header, align);
     }
 
+
+    /**
+     * Calculates the total price of all items in the cart and formats each item as a line in the receipt.
+     * @param lines A list of string arrays, where each array represents a line in the receipt.
+     * @return The total price of all items in the cart.
+     */
     private double calculateItemsParameters(List<String[]> lines) {
         // formatting each line
         double total = 0.00;
@@ -100,6 +106,13 @@ public class ShoppingCart{
         return total;
     }
 
+
+    /**
+     * Converts an item to a line in the receipt and adds it to the list of lines.
+     * @param item The item to be converted.
+     * @param lines The list of lines in the receipt.
+     * @param index The index of the item in the list of items.
+     */
     private void convertItemsToTableLines(Item item, List<String[]> lines, int index) {
         item.setDiscount(calculateDiscount(item.getType(), item.getQuantity()));
         item.setTotalPrice(item.getPrice() * item.getQuantity() * (PERCENT - item.getDiscount()) / PERCENT);
@@ -113,12 +126,24 @@ public class ShoppingCart{
         });
     }
 
+
+
+    /**
+     * Formats the shopping cart into a table.
+     * @param total The total price of all items in the cart.
+     * @param lines A list of string arrays, where each array represents a line in the receipt.
+     * @param header The header of the table.
+     * @param align An array indicating the alignment of each column.
+     * @return The formatted table as a string.
+     */
     private String getFormattedTicketTable(double total, List<String[]> lines, String[] header, int[] align) {
         String[] footer = { String.valueOf(lines.size()),"","","","",
                 MONEY.format(total) };
-        // formatting table
-        // column max length
+
+        // Initialize the width of each column
         int[] width =new int[]{INITIAL_COLUMN_WIDTH, INITIAL_COLUMN_WIDTH, INITIAL_COLUMN_WIDTH, INITIAL_COLUMN_WIDTH, INITIAL_COLUMN_WIDTH, INITIAL_COLUMN_WIDTH};
+
+        // Adjust the width of each column based on the content
         for (String[] line : lines)
             adjustColumnWidth(line, width);
         for (int i = 0; i < header.length; i++)
@@ -126,47 +151,57 @@ public class ShoppingCart{
         for (int i = 0; i < footer.length; i++)
             adjustColumnWidth(footer, width);
 
-        // line length
+        // Calculate line length
         int lineLength = width.length - LINE_LENGTH_ADJUSTMENT;
         for (int w : width)
             lineLength += w;
+
+        // Initialize a StringBuilder to build the table
         StringBuilder sb = new StringBuilder();
 
-        // header
+        // Build the table with header, lines, and footer
         appendFormattedLine(sb, header, align, width);
-
-        // separator
         appendSeparator(sb, lineLength);
-
-        // lines
         for (String[] line : lines) {
             appendFormattedLine(sb, line, align, width);
         }
-
         if (lines.size() > EMPTY) {
-            // separator
             appendSeparator(sb, lineLength);
         }
 
-
-        // footer
+        // Return the formatted table as a string
         appendFormattedLine(sb, footer, align, width);
         return sb.toString();
     }
 
-
-
+    /**
+     * Appends a formatted line to the StringBuilder.
+     * @param sb The StringBuilder to append to.
+     * @param line The line to be formatted.
+     * @param align The alignment for each column.
+     * @param width The width of each column.
+     */
     private void appendFormattedLine(StringBuilder sb, String[] line, int[] align, int[] width) {
         for (int i = 0; i < line.length; i++)
             appendFormatted(sb, line[i], align[i], width[i]);
         sb.append("\n");
     }
 
+    /**
+     * Adjusts the width of each column based on the length of the content.
+     * @param line The line of content.
+     * @param width The current width of each column.
+     */
     private void adjustColumnWidth(String[] line, int[] width) {
         for (int i = 0; i < line.length; i++)
             width[i] = (int) Math.max(width[i], line[i].length());
     }
 
+    /**
+     * Appends a separator line to the StringBuilder.
+     * @param sb The StringBuilder to append to.
+     * @param lineLength The length of the line.
+     */
     private void appendSeparator(StringBuilder sb, int lineLength) {
         for (int i = 0; i < lineLength; i++)
             sb.append("-");
@@ -175,6 +210,8 @@ public class ShoppingCart{
 
 
     // --- private section -----------------------------------------------------
+    // MONEY is a NumberFormat object that formats numbers as strings in the form "$#.00"
+    // It uses a DecimalFormatSymbols object to specify that the decimal separator should be '.'
     private static final NumberFormat MONEY;
     static {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols();
