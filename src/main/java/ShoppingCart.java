@@ -67,28 +67,32 @@ public class ShoppingCart{
         String[] header = {"#","Item","Price","Quan.","Discount","Total"};
         int[] align = new int[] { 1, -1, 1, 1, 1, 1 };
 
-        double total = calculateItemsParameters(lines, header, align);
+        double total = calculateItemsParameters(lines);
         return getFormattedTicketTable(total, lines, header, align);
     }
 
-    private double calculateItemsParameters(List<String[]> lines, String[] header, int[] align) {
+    private double calculateItemsParameters(List<String[]> lines) {
         // formatting each line
         double total = 0.00;
         int  index = 0;
         for (Item item : items) {
-            item.setDiscount(calculateDiscount(item.getType(), item.getQuantity()));
-            item.setTotalPrice(item.getPrice() * item.getQuantity() * (100.00 - item.getDiscount()) / 100.00);
-            lines.add(new String[]{
-                    String.valueOf(++index),
-                    item.getTitle(),
-                    MONEY.format(item.getPrice()),
-                    String.valueOf(item.getQuantity()),
-                    (item.getDiscount() == 0) ? "-" : (String.valueOf(item.getDiscount()) + "%"),
-                    MONEY.format(item.getTotalPrice())
-            });
+            convertItemsToTableLines(item, lines, ++index);
             total += item.getTotalPrice();
         }
         return total;
+    }
+
+    private void convertItemsToTableLines(Item item, List<String[]> lines, int index) {
+        item.setDiscount(calculateDiscount(item.getType(), item.getQuantity()));
+        item.setTotalPrice(item.getPrice() * item.getQuantity() * (100.00 - item.getDiscount()) / 100.00);
+        lines.add(new String[]{
+                String.valueOf(index),
+                item.getTitle(),
+                MONEY.format(item.getPrice()),
+                String.valueOf(item.getQuantity()),
+                (item.getDiscount() == 0) ? "-" : (String.valueOf(item.getDiscount()) + "%"),
+                MONEY.format(item.getTotalPrice())
+        });
     }
 
     private String getFormattedTicketTable(double total, List<String[]> lines, String[] header, int[] align) {
@@ -131,6 +135,7 @@ public class ShoppingCart{
         appendFormattedLine(sb, footer, align, width);
         return sb.toString();
     }
+
 
 
     private void appendFormattedLine(StringBuilder sb, String[] line, int[] align, int[] width) {
