@@ -66,6 +66,12 @@ public class ShoppingCart{
         List<String[]> lines = new ArrayList<String[]>();
         String[] header = {"#","Item","Price","Quan.","Discount","Total"};
         int[] align = new int[] { 1, -1, 1, 1, 1, 1 };
+
+        double total = calculateItemsParameters(lines, header, align);
+        return getFormattedTicketTable(total, lines, header, align);
+    }
+
+    private double calculateItemsParameters(List<String[]> lines, String[] header, int[] align) {
         // formatting each line
         double total = 0.00;
         int  index = 0;
@@ -82,8 +88,11 @@ public class ShoppingCart{
             });
             total += item.getTotalPrice();
         }
+        return total;
+    }
 
-        String[] footer = { String.valueOf(index),"","","","",
+    private String getFormattedTicketTable(double total, List<String[]> lines, String[] header, int[] align) {
+        String[] footer = { String.valueOf(lines.size()),"","","","",
                 MONEY.format(total) };
         // formatting table
         // column max length
@@ -122,6 +131,7 @@ public class ShoppingCart{
         appendFormattedLine(sb, footer, align, width);
         return sb.toString();
     }
+
 
     private void appendFormattedLine(StringBuilder sb, String[] line, int[] align, int[] width) {
         for (int i = 0; i < line.length; i++)
